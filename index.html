@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo App</title>
+</head>
+<body>
+  <h1>My Todo App</h1>
+  <input id="task" placeholder="Enter a task">
+  <button onclick="addTodo()">Add</button>
+  <ul id="todo-list"></ul>
+
+  <script>
+    async function fetchTodos() {
+      const res = await fetch("http://localhost:3000/todos");
+      const todos = await res.json();
+      const list = document.getElementById("todo-list");
+      list.innerHTML = "";
+      todos.forEach((t, i) => {
+        const li = document.createElement("li");
+        li.textContent = t.task + (t.done ? " ✅" : "");
+        if (!t.done) {
+          const btn = document.createElement("button");
+          btn.textContent = "Done";
+          btn.onclick = async () => {
+            await fetch("http://localhost:3000/todos/" + i, { method: "PUT" });
+            fetchTodos();
+          };
+          li.appendChild(btn);
+        }
+        list.appendChild(li);
+      });
+    }
+
+    async function addTodo() {
+      const task = document.getElementById("task").value;
+      await fetch("http://localhost:3000/todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task })
+      });
+      document.getElementById("task").value = "";
+      fetchTodos();
+    }
+
+    fetchTodos();
+  </script>
+</body>
+</html>
